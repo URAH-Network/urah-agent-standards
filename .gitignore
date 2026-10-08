@@ -13,7 +13,21 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Backups
+# Backups & Logs
 *.bak
 *.bak_*
 *.tmp
+*.log
+
+# Secrets, Environment & Credentials
+.env
+.env.*
+*.key
+*.pem
+*.cert
+*.pfx
+*.p12
+*.ovpn
+_secrets/
+_audit/
+

@@ -25,7 +25,11 @@ urah-agent-standards/
 ├── .agents/                                # Chuẩn Antigravity Workspace
 │   ├── AGENTS.md                           # Quy tắc hợp nhất cho Agent
 │   ├── rules/                              # Các quy tắc kỹ thuật mô-đun
+│   │   ├── agent-working-rules.md          # Quy tắc làm việc cho Agent (URAH Standard)
+│   │   └── ...
 │   └── skills/                             # Các bộ kỹ năng bảo mật
+├── templates/                              # Mẫu chuẩn khởi tạo dự án
+│   └── AGENTS.template.md                  # Mẫu chuẩn URAH AGENTS.md (Mục 0–9)
 ├── skills/                                 # Kỹ năng kiểm thử bảo mật
 │   ├── backend-security-audit/
 │   │   └── SKILL.md                        # Rà soát Backend NestJS/Node.js/Prisma
@@ -34,6 +38,7 @@ urah-agent-standards/
 │   └── securevibes-audit/
 │       └── SKILL.md                        # Kiểm thử Đa tác tử 5-Pass theo SecureVibes (Lyft)
 ├── rules/                                  # Bộ quy chuẩn kỹ thuật (Modular)
+│   ├── agent-working-rules.md              # Quy tắc làm việc chuẩn cho Agent (Quyền hạn, Worktree, Testing, Báo cáo)
 │   ├── architecture-patterns.md            # Mô hình kiến trúc & phân tầng React
 │   ├── backend-development.md              # Chuẩn phát triển Backend (Firebase / NestJS)
 │   ├── backend-job-logging.md              # Quy tắc ghi log theo phiên (Job Logging)
@@ -46,7 +51,7 @@ urah-agent-standards/
 │   └── QUY_CHUAN_VA_HUONG_DAN_PENTEST_DOANH_NGHIEP.md
 ├── scripts/                                # Công cụ cài đặt & quét mã nguồn tự động
 │   ├── install-to-global.ps1 / .sh         # Cài đặt vào Global (~/.gemini/)
-│   ├── install-to-project.ps1 / .sh        # Tích hợp vào thư mục .agents/ của dự án
+│   ├── install-to-project.ps1 / .sh        # Tích hợp vào thư mục .agents/ và gốc dự án
 │   └── run-security-scan.ps1 / .sh         # Chạy quét an ninh SAST Grep trực tiếp
 ├── GEMINI.md                               # File Global Rules chuẩn của Antigravity IDE
 └── README.md                               # Tài liệu hướng dẫn sử dụng này

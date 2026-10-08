@@ -1,4 +1,4 @@
-﻿# ==============================================================================
+# ==============================================================================
 # URAH NETWORK - Cài đặt Skills & Rules vào thư mục .agents của Dự án cụ thể
 # ==============================================================================
 
@@ -51,6 +51,14 @@ $srcAgentsMd = Join-Path $sourceAgentsDir "AGENTS.md"
 if (Test-Path $srcAgentsMd) {
     Copy-Item -Path $srcAgentsMd -Destination (Join-Path $targetAgentsDir "AGENTS.md") -Force
     Write-Host "✅ Đã đồng bộ Workspace AGENTS.md" -ForegroundColor Green
+}
+
+# 5. Khởi tạo AGENTS.md ở gốc repo dự án (nếu chưa có)
+$targetRootAgentsMd = Join-Path $targetFullPath "AGENTS.md"
+$srcTemplateAgentsMd = Join-Path $repoRoot "templates\AGENTS.template.md"
+if ((-not (Test-Path $targetRootAgentsMd)) -and (Test-Path $srcTemplateAgentsMd)) {
+    Copy-Item -Path $srcTemplateAgentsMd -Destination $targetRootAgentsMd -Force
+    Write-Host "✨ Đã tạo sẵn template AGENTS.md tại gốc repo dự án: $targetRootAgentsMd (vui lòng điền mục 0)" -ForegroundColor Yellow
 }
 
 Write-Host "`n🎉 [HOÀN TẤT] Dự án $targetFullPath đã được chuẩn hóa với bộ Agent Standards của URAH Network!" -ForegroundColor Cyan

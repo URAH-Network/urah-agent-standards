@@ -26,4 +26,9 @@ cp -r "${REPO_ROOT}/skills/securevibes-audit" "${DEST_AGENTS}/skills/"
 cp -r "${REPO_ROOT}/rules/"* "${DEST_AGENTS}/rules/"
 cp "${REPO_ROOT}/GEMINI.md" "${DEST_AGENTS}/AGENTS.md"
 
+if [ ! -f "${TARGET_PROJECT}/AGENTS.md" ] && [ -f "${REPO_ROOT}/templates/AGENTS.template.md" ]; then
+    cp "${REPO_ROOT}/templates/AGENTS.template.md" "${TARGET_PROJECT}/AGENTS.md"
+    echo "✨ Initialized root AGENTS.md template at ${TARGET_PROJECT}/AGENTS.md"
+fi
+
 echo "🎉 Done! Project ${TARGET_PROJECT} is now standardized with URAH Agent Standards."

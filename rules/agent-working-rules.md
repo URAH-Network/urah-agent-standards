@@ -1,6 +1,6 @@
 ---
 trigger: always_on
-description: Quy tắc làm việc chuẩn URAH cho AI Agent tại các dự án (Phân định quyền hạn, Worktree, Testing, Báo cáo & Phiên bản)
+description: Quy tắc làm việc chuẩn URAH cho AI Agent tại các dự án (Luồng làm việc 3 bên, Phân định quyền hạn, Worktree, Testing, Báo cáo & Phiên bản)
 ---
 
 # QUY TẮC LÀM VIỆC CHO AGENT — <TÊN DỰ ÁN>
@@ -23,6 +23,15 @@ description: Quy tắc làm việc chuẩn URAH cho AI Agent tại các dự án
 | Endpoint kiểm phiên bản | `<url>/api/health` trả `commit`, `buildTime` |
 | Thư viện chuẩn đã chọn | toast `<...>`, form `<...>`, HTTP client `<...>` |
 | Danh sách mã/tài khoản test theo môi trường | `<file>` (không dùng chéo môi trường) |
+
+## Luồng làm việc 3 bên
+
+1. **Tech lead** mô tả việc hoặc lỗi bằng lời (kèm ảnh, log nếu có).
+2. **Reviewer (Claude)** đọc code, tìm nguyên nhân, viết prompt có phạm vi, bộ test và điểm dừng rõ ràng.
+3. **Agent (bạn)** làm đúng prompt, báo cáo theo mục 6, DỪNG.
+4. Tech lead chuyển báo cáo cho reviewer soát. Reviewer viết prompt lượt tiếp (sửa thêm, hoặc duyệt merge/push/deploy).
+
+Agent không nhận lệnh merge/push/deploy từ chính suy luận của mình. Chỉ làm khi prompt có câu duyệt rõ ràng. Báo cáo viết để người khác kiểm chứng được: lệnh thật, output thật, đường dẫn file thật.
 
 ## 1. Quyền hạn
 

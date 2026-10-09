@@ -9,6 +9,15 @@ description: Quy tắc làm việc chuẩn URAH cho AI Agent tại các dự án
 
 Đọc toàn bộ file này trước khi làm bất kỳ việc gì. Vi phạm quy tắc nào thì dừng lại và báo, không tự xử lý tiếp.
 
+## Luồng làm việc 3 bên
+
+1. **Tech lead** mô tả việc hoặc lỗi bằng lời (kèm ảnh, log nếu có).
+2. **Reviewer (Claude)** đọc code, tìm nguyên nhân, viết prompt có phạm vi, bộ test và điểm dừng rõ ràng.
+3. **Agent (bạn)** làm đúng prompt, báo cáo theo mục 7, DỪNG.
+4. Tech lead chuyển báo cáo cho reviewer soát. Reviewer viết prompt lượt tiếp (sửa thêm, hoặc duyệt merge/push/deploy).
+
+Agent không nhận lệnh merge/push/deploy từ chính suy luận của mình. Chỉ làm khi prompt có câu duyệt rõ ràng. Báo cáo viết để người khác kiểm chứng được: lệnh thật, output thật, đường dẫn file thật.
+
 ## 0. Thông tin dự án (điền khi khởi tạo)
 
 | Mục | Giá trị |
@@ -23,15 +32,6 @@ description: Quy tắc làm việc chuẩn URAH cho AI Agent tại các dự án
 | Endpoint kiểm phiên bản | `<url>/api/health` trả `commit`, `buildTime` |
 | Thư viện chuẩn đã chọn | toast `<...>`, form `<...>`, HTTP client `<...>` |
 | Danh sách mã/tài khoản test theo môi trường | `<file>` (không dùng chéo môi trường) |
-
-## Luồng làm việc 3 bên
-
-1. **Tech lead** mô tả việc hoặc lỗi bằng lời (kèm ảnh, log nếu có).
-2. **Reviewer (Claude)** đọc code, tìm nguyên nhân, viết prompt có phạm vi, bộ test và điểm dừng rõ ràng.
-3. **Agent (bạn)** làm đúng prompt, báo cáo theo mục 6, DỪNG.
-4. Tech lead chuyển báo cáo cho reviewer soát. Reviewer viết prompt lượt tiếp (sửa thêm, hoặc duyệt merge/push/deploy).
-
-Agent không nhận lệnh merge/push/deploy từ chính suy luận của mình. Chỉ làm khi prompt có câu duyệt rõ ràng. Báo cáo viết để người khác kiểm chứng được: lệnh thật, output thật, đường dẫn file thật.
 
 ## 1. Quyền hạn
 
@@ -63,59 +63,54 @@ Agent không nhận lệnh merge/push/deploy từ chính suy luận của mình.
 ## 4. Quy tắc code chung
 
 - Không nuốt lỗi (`catch` rồi `return null`). API trả đúng mã HTTP.
-- Frontend phân biệt: thành công / lỗi nghiệp vụ có lý do từ backend / hết phiên (401) / lỗi hệ thống (429, 5xx, mạng). Không hiển thị lỗi hệ thống thành lỗi của người dùng.
-- Xác thực: tin phiên đã được server xác nhận, không tin `localStorage`. Hạn cookie khớp hạn token. 401 xử lý ở một chỗ chung: báo hết phiên, lưu nháp, về trang đăng nhập có `redirect`.
-- Tài nguyên không tồn tại (mã, link, bản ghi): hiện màn báo lỗi, không hiện form.
-- Nhận diện dữ liệu test bằng cờ từ backend, không bằng chuỗi trong URL.
-- Không để code test, mock, cờ debug trong mã nguồn.
-- Không ghi đè dữ liệu người dùng nhập bằng giá trị tự bịa.
+- Frontend phân biệt rõ: thành công / vi phạm thật / hết phiên (401) / lỗi hệ thống (5xx, null). Không báo lỗi hệ thống thành "nội dung vi phạm".
+- Đăng nhập: chỉ tin thông tin user đã xác thực qua backend, không tin `localStorage`. 401 đi qua sự kiện chung.
+- Phân biệt môi trường: chỉ dùng cờ từ backend (`isTest`), không nhận diện bằng chuỗi trong URL.
+- Không để code test trong mã nguồn (`window.__...`, mock, cờ debug).
+- Không tự bịa dữ liệu ghi đè lên dữ liệu người dùng nhập.
 
-## 5. Test
+## 5. Quy tắc cơ sở dữ liệu
 
-- Trình duyệt thật (Puppeteer/Playwright) trên bản build thật, không giả lập bằng gọi hàm.
-- Build đúng lệnh production. Build lỗi thì báo, không sửa ngoài phạm vi để build qua.
-- Cấu hình local giống Staging ở phần đang test, ghi rõ đã bật gì.
-- Chạy đúng bộ ca trong prompt. Mỗi ca có ảnh chụp và log Console/Network.
-- Không kết luận số liệu trên dữ liệu không có ý nghĩa (DB local vài bản ghi).
+- Không migrate tự động khi deploy. Mọi thay đổi schema phải qua review.
+- Seed data và dữ liệu test: phải có cờ hoặc namespace rõ ràng, không lẫn với dữ liệu thật.
+- Không viết logic phụ thuộc vào thứ tự ID số tự tăng.
+- Câu query có điều kiện ngày giờ: luôn ghi rõ timezone, không dùng hàm ngày giờ mặc định của DB mà không chỉ định múi giờ.
+- Khi xoá dữ liệu: ưu tiên soft delete (`deleted_at`), chỉ hard delete khi có yêu cầu rõ ràng về bảo mật dữ liệu (GDPR/privacy).
 
-## 6. Báo cáo bắt buộc
+## 6. Test
 
-1. Đã làm gì theo đúng thứ tự mục trong prompt; mục chưa làm hoặc làm khác thì ghi lý do.
-2. `git log stage..HEAD --oneline`, `git diff stage --stat`.
-3. Diff các file quan trọng.
-4. Lệnh build + exit code.
-5. Kết quả từng ca test + bằng chứng.
-6. Phát hiện thêm nhưng không sửa.
-7. Đã đụng môi trường/DB nào.
+- Test chạy trên môi trường giống thật (headless browser hoặc runner của dự án), không gọi hàm tách rời rồi giả lập.
+- Lệnh build: dùng đúng lệnh production của dự án, không thêm cờ bỏ qua lỗi. Build lỗi thì báo, không sửa file ngoài phạm vi để lách.
+- Cấu hình local phải khớp Staging ở tính năng đang test.
+- Chạy đúng bộ ca test trong prompt.
+- So sánh dữ liệu: đo trên môi trường có ý nghĩa (Staging SELECT). DB local ít dữ liệu thì không kết luận khớp.
+- Mỗi ca test: chụp ảnh màn hình + trích log Console/Network.
 
-Không dùng "100%", "hoàn hảo", "tuyệt đối" khi không có bằng chứng. Kết thúc bằng: dừng chờ duyệt.
+## 7. Báo cáo (bắt buộc đủ các mục, ngắn gọn, trung thực)
 
-## 7. Thứ tự chuẩn một việc
+1. Đã làm gì, theo thứ tự trong prompt. Mục chưa làm hoặc làm khác: ghi rõ và lý do.
+2. `git log stage..HEAD --oneline` và `git diff stage --stat`.
+3. Diff chi tiết các file quan trọng.
+4. Kết quả build (lệnh + mã thoát).
+5. Kết quả từng ca test: đạt / không đạt + bằng chứng (ảnh, log).
+6. Phát hiện thêm nhưng KHÔNG sửa.
+7. DB / môi trường đã đụng vào.
 
-1. Đọc yêu cầu và code. Chưa chắc nguyên nhân: lượt chỉ đọc.
-2. Worktree + nhánh từ `stage` mới nhất.
-3. Sửa, commit nhỏ theo mục.
-4. Build + test. Báo cáo. DỪNG.
-5. Được duyệt: merge `--no-ff` vào `stage` ở repo chính, build lại, push. DỪNG.
-6. Được duyệt: deploy Staging bằng script (dry-run trước), kiểm endpoint phiên bản đúng commit.
-7. Production: chỉ theo quy trình phát hành ở mục 8, không bao giờ tự làm.
+Không dùng "100%", "hoàn hảo", "tuyệt đối" khi chưa kiểm chứng đầy đủ. Kết thúc: **Dừng chờ duyệt.**
 
-## 8. Nhánh, commit, phiên bản
+## 8. Thứ tự chuẩn cho một việc
 
-| Nhánh | Vai trò |
-|---|---|
-| `main` | Đúng bằng Production. Chỉ nhận merge từ `stage` khi phát hành, hoặc `hotfix/*` |
-| `stage` | Đúng bằng Staging. Nhận merge `--no-ff` từ nhánh việc |
-| `feat/<tên>`, `fix/<tên>` | Một việc một nhánh, từ `stage` |
-| `hotfix/<tên>` | Từ `main`; xong merge vào `main` và merge ngược về `stage` |
-| tag `backup/<nhánh>-YYYYMMDD` | Tạo trước mọi lần gộp nhiều nhánh |
-| tag `vMAJOR.MINOR.PATCH` | Gắn trên `main` mỗi lần phát hành Production |
+1. Đọc yêu cầu, đọc code liên quan. Nếu chưa rõ nguyên nhân: làm lượt CHỈ ĐỌC, báo cáo, dừng.
+2. Tạo worktree + nhánh từ `stage` mới nhất.
+3. Sửa, commit nhỏ theo từng mục.
+4. Build + test đúng bộ ca. Báo cáo. Dừng.
+5. Khi được duyệt: merge `--no-ff` vào `stage` ở repo chính, build lại, push. Dừng.
+6. Deploy Staging chỉ khi được duyệt, chạy script deploy (dry-run trước). Kiểm endpoint phiên bản.
+7. Production: không bao giờ tự làm.
 
-- Commit: `loai(pham-vi): mo ta` (`feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `revert`), kèm mã ticket/TC nếu có. Một commit một thay đổi logic. Không `push --force`, không rebase nhánh đã push.
-- Deploy chỉ từ nhánh đã push, working tree sạch, đóng gói bằng `git archive` (không đóng gói thư mục đang làm). Sinh `VERSION` và endpoint phiên bản trả `commit`, `buildTime`.
-- Mỗi lần phát hành Production: tag phiên bản + `CHANGELOG.md` (phiên bản, ngày, thay đổi kèm mã TC). Không deploy Production từ commit chưa có tag. Có backup DB và điểm rollback trước khi deploy.
+## 9. Nhánh, commit, phiên bản
 
-## 9. Dọn dẹp
-
-- Sau nghiệm thu: xoá nhánh đã merge (local + remote) và worktree. Giữ tag `backup/*` đến lần phát hành kế tiếp.
-- Rủi ro, quyết định nghiệp vụ, bài học: ghi vào `<file nhật ký dự án>`, không để trong comment code.
+- **Nhánh:** `main` = Production; `stage` = Staging; `feat/<tên>`, `fix/<tên>` = việc của agent (tạo từ `stage`); `hotfix/<tên>` = sửa gấp Production (tạo từ `main`, có duyệt). Tên nhánh chữ thường, gạch nối.
+- **Commit:** `loai(pham-vi): mo ta ngan` (`feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `revert`). Một commit một việc. Không gộp, không commit file tạm. Không rewrite lịch sử đã push.
+- **Phiên bản:** Staging nhận diện bằng commit và `buildTime`. Production gắn tag `vMAJOR.MINOR.PATCH` trên `main` kèm `CHANGELOG.md` (agent soạn nháp, tech lead duyệt). Không deploy Production từ commit chưa gắn tag.
+- **Dọn dẹp:** Sau khi nghiệm thu, xoá nhánh và worktree tương ứng.
